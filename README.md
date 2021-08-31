@@ -1,2 +1,2 @@
-# Extreme-Climate-Change
-Repository for a brief communication about the amount of research for extreme climate change. 
+# IPCC-Reports-Focus-Overview 
+ Code and data for a paper that gives an overview of the focus of the IPCC over time 
