@@ -1,1 +1,14 @@
-srl-en-1.pdf includes only summary for policy makers, not full report
+Download of all available reports from here (always "Full Report" option if available), except the Methodology Reports:
+https://www.ipcc.ch/reports/
+
+Notes:
+- srl-en-1.pdf includes only summary for policy makers, not full report
+- srtt-en-1.pdf includes only summary for policy makers, not full report
+- av-en-1.pdf includes only summary for policy makers, not full report
+- "Revised 1996 IPCC Guidelines for National Greenhouse Gas Inventories" no pdf available
+- "IPCC Guidelines for National Greenhouse Gas Inventories"  no pdf available
+- "1994 IPCC Guidelines for National Greenhouse Gas Inventories" no pdf available
+- "FAR Climate Change: Synthesis" no pdf available
+- "Methodology Report on Short-lived Climate Forcers" no pdf available
+- "2006 IPCC Guidelines for National Greenhouse Gas Inventories"  no pdf available
+- "2019 Refinement to the 2006 IPCC Guidelines for National Greenhouse Gas Inventories"  no pdf available 

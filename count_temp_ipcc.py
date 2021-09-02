@@ -64,8 +64,8 @@ def create_temp_dict():
     
     
 
-# Working Group Reports
-# Downloadable at https://www.ipcc.ch/working-groups/
+# IPCC Reports
+# Downloadable at https://www.ipcc.ch/reports/
 cwd = os.getcwd()
 reports = [file for file in os.listdir(cwd + os.sep + "reports") if file[-4:] == ".pdf" ]
 
