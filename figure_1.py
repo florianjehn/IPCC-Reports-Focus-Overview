@@ -9,8 +9,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import numpy as np
-import calculate_probabilities as cp
-from sklearn.metrics import auc
 
 
 def plot_nicer(ax, with_legend=True):
@@ -34,182 +32,54 @@ def plot_nicer(ax, with_legend=True):
 
 
 
-def read_counts_total():
-    # Read in the data
-    ipcc_counts = pd.read_csv("Results" + os.sep + "temp_counts_all.csv", sep=";", index_col=0)
+# def read_counts_total():
+#     # Read in the data
+#     ipcc_counts = pd.read_csv("Results" + os.sep + "temp_counts_all.csv", sep=";", index_col=0)
     
-    # Replace the spaces in the temperature description
-    ipcc_counts.index = ipcc_counts.index.str.replace(" ","")
-    # Make temperatures numerical
-    ipcc_counts.index = ipcc_counts.index.str.replace("°C","")
-    ipcc_counts.reset_index(inplace=True)
-    ipcc_counts.columns=["Temp Rise", "Count"]
-    ipcc_counts["Temp Rise"] = ipcc_counts["Temp Rise"].astype(float)
+#     # Replace the spaces in the temperature description
+#     ipcc_counts.index = ipcc_counts.index.str.replace(" ","")
+#     # Make temperatures numerical
+#     ipcc_counts.index = ipcc_counts.index.str.replace("°C","")
+#     ipcc_counts.reset_index(inplace=True)
+#     ipcc_counts.columns=["Temp Rise", "Count"]
+#     ipcc_counts["Temp Rise"] = ipcc_counts["Temp Rise"].astype(float)
+#     return ipcc_counts
+
+def read_ipcc_counts():
+    """reads all counts for all reports and makes on df"""
+    files = os.listdir(os.getcwd()+os.sep+"Results")
+    all_df = pd.DataFrame()
+    for file in files:
+        # skip the total counts for now
+        if file == 'temp_counts_all.csv':
+            continue
+        file_df = pd.read_csv("Results" + os.sep + file, sep=";", index_col=0)
+        file_df.columns = [file[7:-4]]
+        all_df = pd.concat([all_df, file_df], axis=1)
+        
+    return all_df.transpose()
+        
+def scale_counts(ipcc_counts):
+    """scale the counts by overall sum"""
+    sums = ipcc_counts.sum(axis=1)
+    for col in ipcc_counts:
+        ipcc_counts[col] = ipcc_counts[col]/sums*100
+        
     return ipcc_counts
-
-
-def read_counts_1_5():
-    # Read in the data
-    counts_1_5_report = pd.read_csv("Results" + os.sep + "counts_SR15_Full_Report_High_Res.csv", sep=";", index_col=0)
-    # Replace the spaces in the temperature description
-    counts_1_5_report.index = counts_1_5_report.index.str.replace(" ","")
-    # Make temperatures numerical
-    counts_1_5_report.index = counts_1_5_report.index.str.replace("°C","")
-    counts_1_5_report.reset_index(inplace=True)
-    counts_1_5_report.columns=["Temp Rise", "Count"]
-    counts_1_5_report["Temp Rise"] = counts_1_5_report["Temp Rise"].astype(float)
-    return counts_1_5_report
-
-
-def read_probability_curves(ppm):
-    prob_temp = pd.read_csv("Data" + os.sep + "wagner_weitzman_2015_"+ str(ppm)+"ppm.csv", sep=";", index_col=0)
-    return prob_temp
-
-
-def prepare_data_a():  
-    total_counts = read_counts_total()
-    curve_550 = cp.interpolate_curve(cp.read_data(550))
-    curve_700 = cp.interpolate_curve(cp.read_data(700))
-    return total_counts, curve_550, curve_700
-
-
-def prepare_data_b():
-    total_counts = read_counts_total()
-    counts_1_5 = read_counts_1_5()
-    without_1_5 = pd.DataFrame(total_counts[total_counts.columns[-1]] - counts_1_5[counts_1_5.columns[-1]])
-    without_1_5["Temp Rise"] = total_counts["Temp Rise"]  
-    without_1_5.columns = ["Count", "Temp Rise"]
-    curve_550 = cp.interpolate_curve(cp.read_data(550))
-    curve_700 = cp.interpolate_curve(cp.read_data(700))    
-    return without_1_5, curve_550, curve_700
-
-
-def prepare_data_c():
-    total_counts = read_counts_total()
-    total = total_counts.sum()
-    # Convert counts to percent
-    total_counts_percent = (total_counts / total) * 100
-    count_over_3 = pd.DataFrame(total_counts_percent.iloc[5:].sum()).transpose()
     
-    # Get the probability of the values above 3°C
-    curve_700 = cp.interpolate_curve(cp.read_data(700))    
-    prob_over_3 = auc(curve_700.loc[300:,"x"], curve_700.loc[300:, "y"])
     
-    return count_over_3.loc[0,"Count"], prob_over_3
-    
+def read_meta():
+    """reads in the meta data of the reports"""
+    meta = pd.read_csv("Reports" + os.sep + "meta_data_reports.tsv", sep="\t", index_col=-1)
+    meta["Year"]  = meta["Year"].astype("str")
+    return meta
 
-
-def prepare_data_d():
-    total_counts = read_counts_total()
-    total = total_counts.sum()
-    # Convert counts to percent
-    total_counts_percent = (total_counts / total) * 100
-    count_over_6 = pd.DataFrame(total_counts_percent.iloc[11:].sum()).transpose()
+def group_temps(ipcc_counts):
+    ipcc_counts["0.5°C-2°C"] = ipcc_counts[" 0.5°C"] + ipcc_counts[" 1°C"] + ipcc_counts[" 1.5°C"] +ipcc_counts[" 2°C"] 
+    ipcc_counts["2.5°C-4°C"] = ipcc_counts[" 2.5°C"] + ipcc_counts[" 3°C"] + ipcc_counts[" 3.5°C"] +ipcc_counts[" 4°C"] 
+    ipcc_counts[">=4.5°C"] = ipcc_counts[" 4.5°C"] + ipcc_counts[" 5°C"] + ipcc_counts[" 5.5°C"] +ipcc_counts[" 6°C"] +ipcc_counts[" 6.5°C"] + ipcc_counts[" 7°C"] + ipcc_counts[" 7.5°C"] +ipcc_counts[" 8°C"] + ipcc_counts[" 8.5°C"] + ipcc_counts[" 9°C"] + ipcc_counts[" 9.5°C"] +ipcc_counts[" 10°C"] 
+    return ipcc_counts.iloc[:,20:]
     
-    # Get the probability of the values above 3°C
-    curve_700 = cp.interpolate_curve(cp.read_data(700))    
-    prob_over_6 = auc(curve_700.loc[600:,"x"], curve_700.loc[600:, "y"])
-    
-    return count_over_6.loc[0,"Count"], prob_over_6
-
-def create_grid():  
-    """Plots the main figures for the different ppm"""  
-    # Create a gridspec to plot in
-    fig = plt.figure()
-    gs = fig.add_gridspec(2,4,wspace=1.1,hspace=0.5)
-    ax1 = fig.add_subplot(gs[0,:])
-    ax2 = fig.add_subplot(gs[1,:2])
-    ax3 = fig.add_subplot(gs[1,2])
-    ax4 = fig.add_subplot(gs[1,3])
-    axes = [ax1, ax2, ax3, ax4]
-    return axes
-
-
-def plot_figure(color_prob, color_count, edgecolor):
-    axes = create_grid()
-    
-    # Get data for fig a)
-    total_counts, curve_550, curve_700 = prepare_data_a()
-    # Plot fig a)
-    axes[0].bar(x=total_counts["Temp Rise"],height=total_counts["Count"], width=0.3,color=color_count,label="Occurence in IPCC reports")
-    axes.append(axes[0].twinx())
-    axes[4].plot(curve_550["x"], curve_550["y"], color=color_prob, linestyle="--", label="Probability curve for 550 ppm")
-    axes[4].plot(curve_700["x"], curve_700["y"], color=color_prob, label="Probability curve for 700 ppm")
-    axes[4].set_xlim(-0.5,10.5)
-    axes[4].set_ylim(0,0.4)
-    # add fake label for legend
-    axes[4].bar(2,0,color=color_count,label="Occurence in IPCC reports")
-    legend = plt.legend()
-    # make legend nicer
-    for text in legend.get_texts():
-        text.set_color("#676767")
-    
-    # Get data for fig b)
-    without_1_5, curve_550, curve_700 = prepare_data_b()
-    axes[1].bar(x=without_1_5["Temp Rise"],height=without_1_5["Count"], width=0.3,color=color_count)
-    axes.append(axes[1].twinx())
-    axes[5].plot(curve_550["x"], curve_550["y"], color=color_prob, linestyle="--", label="550 ppm")
-    axes[5].plot(curve_700["x"], curve_700["y"], color=color_prob, label="700 ppm")
-    axes[5].set_xlim(-0.5,10.5)
-    axes[5].set_ylim(0,0.4)
-    
-    # Get data for fig c)
-    count_over_3, prob_over_3 = prepare_data_c()
-    axes[2].bar(x=1.5,height=count_over_3,width=0.04, color=color_count)
-    axes.append(axes[2].twinx())
-    axes[6].bar(x=1.6,height=prob_over_3,width=0.04, color=color_prob)
-    axes[2].set_ylim(0,65)
-    axes[6].set_ylim(0,0.65)
-    axes[2].set_xlim(1.35, 1.75)
-    axes[2].set_xticklabels([""])
-
-    
-    # Get data for fig d)
-    count_over_6, prob_over_6 = prepare_data_d()
-    axes[3].bar(x=1.5,height=count_over_6,width=0.04, color=color_count)
-    axes.append(axes[3].twinx())
-    axes[7].bar(x=1.6,height=prob_over_6,width=0.04, color=color_prob, label="Probability")
-    axes[3].set_ylim(0,65)
-    axes[7].set_ylim(0,0.65)
-    axes[3].set_xlim(1.35, 1.75)
-    axes[3].set_xticklabels([""])
-    axes[7].bar(2,0,color=color_count,label="Occurence")
-    legend = plt.legend(fontsize=9)
-    # make legend nicer
-    for text in legend.get_texts():
-        text.set_color("#676767")
-
-    
-    # Set lables
-    for ax in [axes[0], axes[1]]:
-        ax.set_ylabel("Absolute Occurence [/]")
-        ax.set_xlabel("Temperature Change [°C]")
-        ax.locator_params(axis='x', nbins=20)
-    
-    for ax in [axes[2],axes[3]]:
-        ax.set_ylabel("Relative Occurence [%]")
-
-    for ax in axes[4:]:
-        ax.set_ylabel("Warming Probability [/]")
-    
-    axes[0].set_title("a) Temperature count in AR5 working group reports and special reports until 2020")
-    axes[1].set_title("b) Excluding special report on 1.5°C warming")
-    axes[2].set_title("c, d) Cumulative probability of warming and cumulative occurence of\nwarming in the IPCC for 3°C (and above) (c) and 6°C (and above) (d)",
-                      loc="left", fontsize=9, color="#4F4F4F")   
-    
-    # make nicer
-    for ax in axes:
-        plot_nicer(ax, with_legend=False)
-        plt.setp(ax.xaxis.get_majorticklabels(), rotation=0)
-    
-    for ax in [axes[2], axes[3], axes[6], axes[7]]:
-        ax.tick_params(axis="x", which=u'both',length=0)
-
-    fig=plt.gcf()
-    fig.set_size_inches(12,6)
-    fig.tight_layout()
-    plt.savefig("Figures" + os.sep + "warming_curves.png",dpi=800, bbox_inches="tight")
-    plt.close()
     
 if __name__ == "__main__":
     # Define colors
@@ -217,8 +87,52 @@ if __name__ == "__main__":
     color_count = "#DBB587"
     edgecolor = "white"
     # Plot
-    plot_figure(color_prob, color_count, edgecolor)
-        
+    ipcc_counts = read_ipcc_counts()
+    ipcc_counts_grouped = group_temps(ipcc_counts.copy())
+    # Remove the ones with few entries overall
+    ipcc_counts_grouped = ipcc_counts_grouped[ipcc_counts_grouped.sum(axis=1)>5]
+    ipcc_counts_scaled = scale_counts(ipcc_counts_grouped.copy())
+    meta = read_meta()
+    meta_and_counts = pd.merge(meta, ipcc_counts_scaled, right_index=True, left_index=True) 
+    
+     
+    # WG plotting
+    fig, axes = plt.subplots(nrows=3,sharey=True, sharex=True)
+    axes.flatten()
+    wg1 = meta_and_counts[meta_and_counts["Working Group I"]]
+    wg1.iloc[:,-3:].mean().plot(kind="bar", ax=axes[0])
+    axes[0].set_title("WG1")
+    wg2 = meta_and_counts[meta_and_counts["Working Group II"]]
+    wg2.iloc[:,-3:].mean().plot(kind="bar", ax=axes[1]) 
+    axes[1].set_title("WG2")
+    wg3 = meta_and_counts[meta_and_counts["Working Group III"]]
+    wg3.iloc[:,-3:].mean().plot(kind="bar", ax=axes[2])
+    axes[2].set_title("WG3")    
+    for ax in axes:
+        ax.set_ylabel("% Mentions")
+        ax.yaxis.grid(True)
+    fig.tight_layout()
+    plt.savefig("WG.png", dpi=200)
+    #plt.close()
+    
+    
+    
+    # Remove for plotting   
+    del(meta_and_counts["Working Group I"])
+    del(meta_and_counts["Working Group II"])
+    del(meta_and_counts["Working Group III"])
+    
+    # AR plotting
+    ax = meta_and_counts.groupby("AR").mean().plot()
+    ax.set_ylabel("% Mentions")
+    plt.savefig("Figures"+ os.sep +"AR.png", dpi=200)
+    plt.close()
+    
+
+    # TODO
+    # why meta_coutns only 36 long?
+    # exclude reports with fewer than 10 entries?
+    
     
     
     
