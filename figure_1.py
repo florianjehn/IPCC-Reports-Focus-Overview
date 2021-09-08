@@ -80,53 +80,98 @@ def group_temps(ipcc_counts):
     ipcc_counts[">=4.5°C"] = ipcc_counts[" 4.5°C"] + ipcc_counts[" 5°C"] + ipcc_counts[" 5.5°C"] +ipcc_counts[" 6°C"] +ipcc_counts[" 6.5°C"] + ipcc_counts[" 7°C"] + ipcc_counts[" 7.5°C"] +ipcc_counts[" 8°C"] + ipcc_counts[" 8.5°C"] + ipcc_counts[" 9°C"] + ipcc_counts[" 9.5°C"] +ipcc_counts[" 10°C"] 
     return ipcc_counts.iloc[:,20:]
     
+
+def merge_counts_meta(ipcc_counts, meta):
+    return pd.merge(meta, ipcc_counts, right_index=True, left_index=True) 
+
+def plot_all_temp_by_ar(ipcc_counts, meta):
+    """Plots all temperatures for all assessment reports  """
+    ipcc_counts = scale_counts(ipcc_counts.copy())
+    counts_meta = merge_counts_meta(ipcc_counts, meta)
+    temps = create_temp_keys()
+    ax = counts_meta.groupby("AR")[temps].mean().plot(cmap="YlOrRd", kind="bar", width=1, stacked=True)
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(handles[::-1], labels[::-1],loc='upper right', bbox_to_anchor=(1.15, 1))
+    ax.set_ylabel("% Mentions")
+    fig = plt.gcf()
+    fig.set_size_inches(10,10)
+    fig.tight_layout()
+    plt.savefig("Figures"+ os.sep +"AR_all_temps.png", dpi=200)
+    plt.close()
     
+def plot_group_temp_by_ar(ipcc_counts, meta):
+    """Plots all temperatures for all assessment reports  """
+    ipcc_counts = group_temps(ipcc_counts.copy())
+    temps=ipcc_counts.columns
+    ipcc_counts = scale_counts(ipcc_counts.copy())
+    counts_meta = merge_counts_meta(ipcc_counts, meta)
+    ax = counts_meta.groupby("AR")[temps].mean().plot(cmap="Wistia", kind="bar", width=1, stacked=True)
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(handles[::-1], labels[::-1],loc='upper right', bbox_to_anchor=(1.15, 1))
+    ax.set_ylabel("% Mentions")
+    fig = plt.gcf()
+    fig.set_size_inches(10,10)
+    fig.tight_layout()
+    plt.savefig("Figures"+ os.sep +"AR_group_temps.png", dpi=200)    
+
+def create_temp_keys():
+    temps = []
+    for i,temp in enumerate(np.arange(0.5,10.1,0.5)):
+        if i % 2 != 0:
+             temps.append(" "+str(int(temp))+"°C")
+        else: 
+             temps.append(" "+str(temp)+"°C" )
+    return temps
+
+
 if __name__ == "__main__":
-    # Define colors
+    # Define basic stuff
     color_prob = "#4F4F4F"
     color_count = "#DBB587"
     edgecolor = "white"
-    # Plot
-    ipcc_counts = read_ipcc_counts()
-    ipcc_counts_grouped = group_temps(ipcc_counts.copy())
-    # Remove the ones with few entries overall
-    ipcc_counts_grouped = ipcc_counts_grouped[ipcc_counts_grouped.sum(axis=1)>5]
-    ipcc_counts_scaled = scale_counts(ipcc_counts_grouped.copy())
+    min_temp_found = 5
+    # get the data
     meta = read_meta()
-    meta_and_counts = pd.merge(meta, ipcc_counts_scaled, right_index=True, left_index=True) 
-    
-     
-    # WG plotting
-    fig, axes = plt.subplots(nrows=3,sharey=True, sharex=True)
-    axes.flatten()
-    wg1 = meta_and_counts[meta_and_counts["Working Group I"]]
-    wg1.iloc[:,-3:].mean().plot(kind="bar", ax=axes[0])
-    axes[0].set_title("WG1")
-    wg2 = meta_and_counts[meta_and_counts["Working Group II"]]
-    wg2.iloc[:,-3:].mean().plot(kind="bar", ax=axes[1]) 
-    axes[1].set_title("WG2")
-    wg3 = meta_and_counts[meta_and_counts["Working Group III"]]
-    wg3.iloc[:,-3:].mean().plot(kind="bar", ax=axes[2])
-    axes[2].set_title("WG3")    
-    for ax in axes:
-        ax.set_ylabel("% Mentions")
-        ax.yaxis.grid(True)
-    fig.tight_layout()
-    plt.savefig("WG.png", dpi=200)
-    #plt.close()
+
+    ipcc_counts = read_ipcc_counts()
+    # Remove the ones with few entries overall
+    ipcc_counts = ipcc_counts[ipcc_counts.sum(axis=1)>min_temp_found]
     
     
+   # ipcc_counts_grouped = group_temps(ipcc_counts.copy())
+  #  ipcc_counts_grouped = 
+   # ipcc_counts_scaled = scale_counts(ipcc_counts_grouped.copy())
     
-    # Remove for plotting   
-    del(meta_and_counts["Working Group I"])
-    del(meta_and_counts["Working Group II"])
-    del(meta_and_counts["Working Group III"])
+    plot_all_temp_by_ar(ipcc_counts, meta)
+    plot_group_temp_by_ar(ipcc_counts, meta)
+    # # WG plotting
+    # fig, axes = plt.subplots(nrows=3,sharey=True, sharex=True)
+    # axes.flatten()
+    # wg1 = meta_and_counts[meta_and_counts["Working Group I"]]
+    # wg1.iloc[:,-3:].mean().plot(kind="bar", ax=axes[0])
+    # axes[0].set_title("WG1")
+    # wg2 = meta_and_counts[meta_and_counts["Working Group II"]]
+    # wg2.iloc[:,-3:].mean().plot(kind="bar", ax=axes[1]) 
+    # axes[1].set_title("WG2")
+    # wg3 = meta_and_counts[meta_and_counts["Working Group III"]]
+    # wg3.iloc[:,-3:].mean().plot(kind="bar", ax=axes[2])
+    # axes[2].set_title("WG3")    
+    # for ax in axes:
+    #     ax.set_ylabel("% Mentions")
+    #     ax.yaxis.grid(True)
+    # fig.tight_layout()
+    # plt.savefig("WG.png", dpi=200)
+    # #plt.close()
     
-    # AR plotting
-    ax = meta_and_counts.groupby("AR").mean().plot()
-    ax.set_ylabel("% Mentions")
-    plt.savefig("Figures"+ os.sep +"AR.png", dpi=200)
-    plt.close()
+    
+    
+    # # Remove for plotting   
+    # del(meta_and_counts["Working Group I"])
+    # del(meta_and_counts["Working Group II"])
+    # del(meta_and_counts["Working Group III"])
+    
+    # # AR plotting
+    # 
     
 
     # TODO
