@@ -87,16 +87,44 @@ def merge_counts_meta(ipcc_counts, meta):
 def plot_all_temp_by_ar(ipcc_counts, meta):
     """Plots all temperatures for all assessment reports  """
     ipcc_counts = scale_counts(ipcc_counts.copy())
+    # group for second layer of plot
+    ipcc_counts_grouped = group_temps(ipcc_counts.copy())
+    temp_groups =  ipcc_counts_grouped.columns
+    # prep for plotting
     counts_meta = merge_counts_meta(ipcc_counts, meta)
+    counts_meta = merge_counts_meta(counts_meta, ipcc_counts_grouped)
     temps = create_temp_keys()
-    ax = counts_meta.groupby("AR")[temps].mean().plot(cmap="YlOrRd", kind="bar", width=1, stacked=True)
+    # Plot the seperate temps
+    ax = counts_meta.groupby("AR")[temps].mean().plot(cmap="coolwarm", kind="bar", width=1, stacked=True)    
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(handles[::-1], labels[::-1],loc='upper right', bbox_to_anchor=(1.15, 1))
+    # Plot the temp groups
+    temp_group_means_by_ar = counts_meta.groupby("AR")[temp_groups].mean()
+    # prep df for stacking
+    temp_group_means_by_ar["2.5°C-4°C"] = temp_group_means_by_ar["2.5°C-4°C"] + temp_group_means_by_ar["0.5°C-2°C"]
+    del(temp_group_means_by_ar[">=4.5°C"])
+    # plot  group lines
+    for temp_group in temp_groups[:-1]:
+        last_AR = 0
+        for i, AR in enumerate(temp_group_means_by_ar[temp_group]):
+            # plot horizontal line
+            ax.plot([i-0.5,i+1-0.5], [AR,AR], color="black")
+            # Plot vertical lines
+            if i > 0:
+                ax.plot([i-0.5, i-0.5], [AR, last_AR], color="black")    
+                last_AR = AR
+            else:
+                 last_AR = AR
+
+    for temp_group, y_pos in zip(temp_groups, [20,60,90]):
+        ax.text(2, y_pos,temp_group, fontsize=20, fontweight="bold")
+        
+    # Make pretty
     ax.set_ylabel("% Mentions")
     fig = plt.gcf()
     fig.set_size_inches(10,10)
     fig.tight_layout()
-    plt.savefig("Figures"+ os.sep +"AR_all_temps.png", dpi=200)
+    plt.savefig("Figures"+ os.sep +"AR_all_temps_and_grouped.png", dpi=200)
     plt.close()
     
 def plot_group_temp_by_ar(ipcc_counts, meta):
@@ -105,7 +133,7 @@ def plot_group_temp_by_ar(ipcc_counts, meta):
     temps=ipcc_counts.columns
     ipcc_counts = scale_counts(ipcc_counts.copy())
     counts_meta = merge_counts_meta(ipcc_counts, meta)
-    ax = counts_meta.groupby("AR")[temps].mean().plot(cmap="Wistia", kind="bar", width=1, stacked=True)
+    ax = counts_meta.groupby("AR")[temps].mean().plot(cmap="coolwarm", kind="bar", width=1, stacked=True)
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(handles[::-1], labels[::-1],loc='upper right', bbox_to_anchor=(1.15, 1))
     ax.set_ylabel("% Mentions")
@@ -113,6 +141,7 @@ def plot_group_temp_by_ar(ipcc_counts, meta):
     fig.set_size_inches(10,10)
     fig.tight_layout()
     plt.savefig("Figures"+ os.sep +"AR_group_temps.png", dpi=200)    
+    plt.close()
 
 def create_temp_keys():
     temps = []
@@ -143,7 +172,7 @@ if __name__ == "__main__":
    # ipcc_counts_scaled = scale_counts(ipcc_counts_grouped.copy())
     
     plot_all_temp_by_ar(ipcc_counts, meta)
-    plot_group_temp_by_ar(ipcc_counts, meta)
+#    plot_group_temp_by_ar(ipcc_counts, meta)
     # # WG plotting
     # fig, axes = plt.subplots(nrows=3,sharey=True, sharex=True)
     # axes.flatten()
