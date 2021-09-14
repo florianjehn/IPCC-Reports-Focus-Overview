@@ -8,46 +8,7 @@ import re
 import numpy as np
 import pandas as pd
 import os
-
-from pdfminer3.pdfinterp import PDFResourceManager, PDFPageInterpreter
-from pdfminer3.converter import TextConverter
-from pdfminer3.layout import LAParams
-from pdfminer3.pdfpage import PDFPage
-from io import StringIO
-
-def convert_pdf_to_txt(path):
-    """
-    Takes a path and reads the pdf there. Scraps all the text and returns 
-    it as one big string. 
-    """
-    # Method taken from https://stackoverflow.com/questions/26494211/extracting-text-from-a-pdf-file-using-pdfminer-in-python
-    rsrcmgr = PDFResourceManager()
-    retstr = StringIO()
-    codec = 'utf-8'
-    laparams = LAParams()
-    device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
-    fp = open(path, 'rb')
-    interpreter = PDFPageInterpreter(rsrcmgr, device)
-    password = ""
-    maxpages = 0
-    caching = True
-    pagenos=set()
-    i = 0
-    print("Starting to read in the single pages")
-    for page in PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password,caching=caching, check_extractable=True):
-        # Give some feedback that somethign is happening
-        if i % 50 == 0:
-            print("Finished all pages until page " + str(i))
-        interpreter.process_page(page)
-        i += 1
-
-    text = retstr.getvalue()
-
-    fp.close()
-    device.close()
-    retstr.close()
-    return text
-
+import csv
 
 def create_temp_dict():
     """Creates a dictionary for all the single temperatures to count and returns it"""
@@ -62,33 +23,31 @@ def create_temp_dict():
         temp_dict[key] = 0
     return temp_dict
     
+def get_all_string(report):
+    with open(os.getcwd() + os.sep + "Raw IPCC Strings" + os.sep + report, 'r', encoding='utf-8') as f:
+        return f.read()
     
 
-# IPCC Reports
-# Downloadable at https://www.ipcc.ch/reports/
-cwd = os.getcwd()
-reports = [file for file in os.listdir(cwd + os.sep + "reports") if file[-4:] == ".pdf" ]
-
-temp_counts = pd.DataFrame()
-# Go through all working group reports
-for report in reports:
-    print("Starting with " + report)
-    # Read it in 
-    text = convert_pdf_to_txt("reports" + os.sep + report)
+def count_temperatures(report):
     temp_dict = create_temp_dict()
+    text = get_all_string(report)
+   # print()
     # count how often a temperature occures
     for temp in temp_dict.keys():
         number_of_occurences = len(re.findall(temp, text))   
+        print("Found " + temp +  " " + str(number_of_occurences) + " time(s)")
         if number_of_occurences > 0: 
-            print("Found " + temp +  " " + str(number_of_occurences) + " time(s)")
             temp_dict[temp] += number_of_occurences
     # Save the results for the single pdf
     temp_counts_pdf = pd.DataFrame.from_dict(temp_dict, orient="index")
     temp_counts_pdf.to_csv("Results" + os.sep + "counts_" + report[:-4] + ".csv", sep=";")
-    # Combine it with the overall data
-    temp_counts = pd.concat([temp_counts, temp_counts_pdf],axis=1)
     
-            
-# Save the results
-temp_counts = temp_counts.sum(axis=1)
-temp_counts.to_csv("Results" + os.sep + "temp_counts_all.csv", sep=";")
+    
+def count_all_reports():
+    reports = [file for file in os.listdir(os.getcwd() + os.sep + "Raw IPCC Strings") if file[-4:] == ".csv" ]
+    for report in reports:
+        print("Starting with " + report)  
+        count_temperatures(report)
+        
+
+count_all_reports()
