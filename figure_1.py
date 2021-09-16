@@ -36,11 +36,8 @@ def read_ipcc_counts():
     files = os.listdir(os.getcwd()+os.sep+"Results")
     all_df = pd.DataFrame()
     for file in files:
-        # skip the total counts for now
-        if file == 'temp_counts_all.csv':
-            continue
         file_df = pd.read_csv("Results" + os.sep + file, sep=";", index_col=0)
-        file_df.columns = [file[7:-4]]
+        file_df.columns = [file[:-4]]
         all_df = pd.concat([all_df, file_df], axis=1)
         
     return all_df.transpose()
@@ -56,7 +53,7 @@ def scale_counts(ipcc_counts):
     
 def read_meta():
     """reads in the meta data of the reports"""
-    meta = pd.read_csv("Reports" + os.sep + "meta_data_reports.tsv", sep="\t", index_col=-1)
+    meta = pd.read_csv("Reports" + os.sep + "meta_data_reports.tsv", sep="\t")
     meta["Year"]  = meta["Year"].astype("str")
     return meta
 
@@ -69,7 +66,7 @@ def group_temps(ipcc_counts):
     
 
 def merge_counts_meta(ipcc_counts, meta):
-    return pd.merge(meta, ipcc_counts, right_index=True, left_index=True) 
+    return pd.merge(meta, ipcc_counts, right_index=True, left_on="count_names") 
 
 
 def plot_all_temp_by_ar(ipcc_counts, meta):
@@ -80,7 +77,7 @@ def plot_all_temp_by_ar(ipcc_counts, meta):
     temp_groups =  ipcc_counts_grouped.columns
     # prep for plotting
     counts_meta = merge_counts_meta(ipcc_counts, meta)
-    counts_meta = merge_counts_meta(counts_meta, ipcc_counts_grouped)
+    counts_meta = merge_counts_meta(ipcc_counts_grouped, counts_meta)
     temps = create_temp_keys()
     # Plot the seperate temps
     ax = counts_meta.groupby("AR")[temps].mean().plot(cmap="coolwarm", kind="bar", width=1, stacked=True)    
@@ -126,13 +123,61 @@ def create_temp_keys():
     return temps
 
 
+def lookup_names():
+    """"Returns lookup dict for different files names to merge them"""
+    lookup_dict = {
+        "IPCC_AR6_WGI_Full_Report":"counts_ReportsIPCCAR6WGIFullReportpdf_parsed",
+        "SROCC_FullReport_FINAL":"counts_ReportsSROCCFullReportFINALpdf_parsed",
+        "210714-IPCCJ7230-SRCCL-Complete-BOOK-HRES":"counts_Reports210714IPCCJ7230SRCCLCompleteBOOKHRESpdf_parsed",
+        "SR15_Full_Report_Low_Res":"counts_ReportsSR15FullReportLowRespdf_parsed",
+        "SYR_AR5_FINAL_full":"counts_ReportsSYRAR5FINALfullwcoverpdf_parsed",
+        "ipcc_wg3_ar5_full":"counts_Reportsipccwg3ar5fullpdf_parsed",
+        "WGIIAR5-PartA_FINAL":"counts_ReportsWGIIAR5PartBFINALpdf_parsed",
+        "WGIIAR5-PartB_FINAL":"counts_ReportsWGIIAR5PartAFINALpdf_parsed",
+        "WG1AR5_all_final":"counts_ReportsWG1AR5allfinalpdf_parsed",
+        "SREX_Full_Report-1":"counts_ReportsSREXFullReport1pdf_parsed",
+        "SRREN_Full_Report-1":"counts_ReportsSRRENFullReport1pdf_parsed",
+        "ar4_syr_full_report":"counts_Reportsar4syrfullreportpdf_parsed",
+        "ar4_wg2_full_report":"counts_Reportsar4wg2fullreportpdf_parsed",
+        "ar4_wg1_full_report-1":"counts_Reportsar4wg1fullreport1pdf_parsed",
+        "ar4_wg3_full_report-1":"counts_Reportsar4wg3fullreport1pdf_parsed",
+        "sroc_full-1":"counts_Reportssrocfull1pdf_parsed",
+        "srccs_wholereport-1":"counts_Reportssrccswholereport1pdf_parsed",
+        "SYR_TAR_full_report":"counts_ReportsSYRTARfullreportpdf_parsed",
+        "WGII_TAR_full_report-2":"counts_ReportsWGIITARfullreport2pdf_parsed",
+        "WGI_TAR_full_report":"counts_ReportsWGITARfullreportpdf_parsed",
+        "WGIII_TAR_full_report":"counts_ReportsWGIIITARfullreportpdf_parsed",
+        "srl-en-1":"counts_Reportssrlen1pdf_parsed",
+        "srtt-en-1":"counts_Reportssrtten1pdf_parsed",
+        "emissions_scenarios-1":"counts_Reportsemissionsscenarios1pdf_parsed",
+        "av-en-1":"counts_Reportsaven1pdf_parsed",
+        "The-Regional-Impact":"counts_ReportsTheRegionalImpactpdf_parsed",
+        "2nd-assessment-en-1":"counts_Reports2ndassessmenten1pdf_parsed",
+        "ipcc_sar_wg_III_full_report":"counts_ReportsipccsarwgIIIfullreportpdf_parsed",
+        "ipcc_sar_wg_II_full_report":"counts_ReportsipccsarwgIIfullreportpdf_parsed",
+        "ipcc_sar_wg_I_full_report":"counts_ReportsipccsarwgIfullreportpdf_parsed",
+        "climate_change_1994-2":"counts_Reportsclimatechange19942pdf_parsed",
+        "ipcc-technical-guidelines-1994n-1":"counts_Reportsipcctechnicalguidelines1994n1pdf_parsed",
+        "ipcc_wg_I_1992_suppl_report_full_report":"counts_ReportsipccwgI1992supplreportfullreportpdf_parsed",
+        "ipcc_wg_II_1992_suppl_report_full_report":"counts_ReportsipccwgII1992supplreportfullreportpdf_parsed",
+        "ipcc_90_92_assessments_far_full_report":"counts_Reportsipcc9092assessmentsfarfullreportpdf_parsed",
+        "ipcc_far_wg_III_full_report":"counts_ReportsipccfarwgIIIfullreportpdf_parsed",
+        "ipcc_far_wg_II_full_report":"counts_ReportsipccfarwgIIfullreportpdf_parsed",
+        "ipcc_far_wg_I_full_report":"counts_ReportsipccfarwgIfullreportpdf_parsed",
+        }
+    return lookup_dict
+    
+#ReportsWGIIITARfullreportpdf_parsed
 if __name__ == "__main__":
     # Define basic stuff
     min_temp_found = 5
     
-    # get the data
-    meta = read_meta()
+    # get the data    
     ipcc_counts = read_ipcc_counts()
+
+    meta = read_meta()
+    # Get the other file names to be able to merge later
+    meta["count_names"] = meta["PDF Name"].map(lookup_names())
     
     # Remove the ones with few entries overall
     ipcc_counts = ipcc_counts[ipcc_counts.sum(axis=1)>min_temp_found]
@@ -142,7 +187,6 @@ if __name__ == "__main__":
 
 
     # TODO
-    # why meta_coutns only 36 long?
     # exclude reports with fewer than 10 entries?
     
     
