@@ -23,25 +23,43 @@ def create_temp_dict():
         temp_dict[key] = 0
     return temp_dict
     
+
 def get_all_string(report):
     with open(os.getcwd() + os.sep + "Raw IPCC Strings" + os.sep + report, 'r', encoding='utf-8') as f:
         return f.read()
     
 
+# def count_temperatures(report):
+#     temp_dict = create_temp_dict()
+#     text = get_all_string(report)
+#     # print()
+#     # count how often a temperature occures
+#     for temp in temp_dict.keys():
+#         number_of_occurences = len(re.findall(temp, text))   
+#         print("Found " + temp +  " " + str(number_of_occurences) + " time(s)")
+#         if number_of_occurences > 0: 
+#             temp_dict[temp] += number_of_occurences
+#     # Save the results for the single pdf
+#     temp_counts_pdf = pd.DataFrame.from_dict(temp_dict, orient="index")
+#     temp_counts_pdf.to_csv("Results" + os.sep + "counts_" + report[:-4] + ".csv", sep=";")
+
 def count_temperatures(report):
     temp_dict = create_temp_dict()
-    text = get_all_string(report)
-   # print()
+    report_df = pd.read_csv(os.getcwd() + os.sep + "Raw IPCC Strings" + os.sep + report)
+    # make sure everything is in one column
+    if len(report_df.columns) != 1:
+        print(report)
+        raise TypeError("Should be a dataframe with only one column")
     # count how often a temperature occures
     for temp in temp_dict.keys():
-        number_of_occurences = len(re.findall(temp, text))   
+        number_of_occurences = report_df[report_df.columns[0]].str.count(temp).sum() 
         print("Found " + temp +  " " + str(number_of_occurences) + " time(s)")
-        if number_of_occurences > 0: 
-            temp_dict[temp] += number_of_occurences
+        temp_dict[temp] += number_of_occurences
     # Save the results for the single pdf
     temp_counts_pdf = pd.DataFrame.from_dict(temp_dict, orient="index")
     temp_counts_pdf.to_csv("Results" + os.sep + "counts_" + report[:-4] + ".csv", sep=";")
     
+        
     
 def count_all_reports():
     reports = [file for file in os.listdir(os.getcwd() + os.sep + "Raw IPCC Strings") if file[-4:] == ".csv" ]
