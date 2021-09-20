@@ -100,3 +100,18 @@ def create_temp_keys():
              temps.append(" "+str(temp)+"°C" )
     return temps
 
+
+def combine_all_raw_strings():
+    """combines all raw strings into one big file to search through"""
+    df = pd.DataFrame()
+    reports = [file for file in os.listdir(os.getcwd() + os.sep + "Raw IPCC Strings") if file[-4:] == ".csv" ]
+    for report in reports:
+        print("Starting with " + report) 
+        report_df = pd.read_csv(os.getcwd() + os.sep + "Raw IPCC Strings" + os.sep + report)
+        df = pd.concat([df, report_df])
+    df.to_csv("Raw IPCC Strings" + os.sep + "all_reports.csv")    
+    
+    
+
+if __name__ == "__main__":
+    combine_all_raw_strings()

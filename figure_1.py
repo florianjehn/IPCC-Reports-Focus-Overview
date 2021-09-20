@@ -144,7 +144,8 @@ def plot_all_temp_by_report_type(ipcc_counts, meta):
     
 if __name__ == "__main__":
     # Define basic stuff
-    min_temp_found = 5
+    # exclude reports with only few temperature mentions, as they distort the picture
+    min_temp_found = 10
     
     # get the data    
     ipcc_counts = rp_da.read_ipcc_counts()
@@ -157,7 +158,7 @@ if __name__ == "__main__":
     ipcc_counts = ipcc_counts[ipcc_counts.sum(axis=1)>min_temp_found]
     
     # Plot    
-   # plot_all_temp_by_ar(ipcc_counts, meta)
+    plot_all_temp_by_ar(ipcc_counts, meta)
     plot_all_temp_by_wg(ipcc_counts, meta)
 
     plot_all_temp_by_report_type(ipcc_counts, meta)
