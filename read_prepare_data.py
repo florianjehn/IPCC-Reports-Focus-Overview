@@ -111,7 +111,6 @@ def combine_all_raw_strings():
         df = pd.concat([df, report_df])
     df.to_csv("Raw IPCC Strings" + os.sep + "all_reports.csv")    
     
-    
 
 if __name__ == "__main__":
     combine_all_raw_strings()
