@@ -146,7 +146,7 @@ if __name__ == "__main__":
     # Define basic stuff
     # exclude reports with only few temperature mentions, as they distort the picture
     min_temp_found = 10
-    cmap = "inferno_r"
+    cmap = "magma_r"
     
     # get the data    
     ipcc_counts = rp_da.read_ipcc_counts()
