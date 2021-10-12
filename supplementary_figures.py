@@ -105,7 +105,7 @@ if __name__ == "__main__":
     cmap = "magma_r"
     
     # get the data    
-    ipcc_counts = rp_da.read_ipcc_counts()
+    ipcc_counts = rp_da.read_ipcc_counts_temp()
 
     meta = rp_da.read_meta()
     # Get the other file names to be able to merge later

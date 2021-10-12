@@ -8,17 +8,48 @@ import os
 import pandas as pd
 import numpy as np
 
-def read_ipcc_counts():
-    """reads all counts for all reports and makes on df"""
-    files = os.listdir(os.getcwd()+os.sep+"Results")
+def read_ipcc_counts_temp():
+    """reads all counts of temperatures for all reports and makes on df"""
+    files = os.listdir(os.getcwd()+os.sep+"Results"+ os.sep + "temperatures")
     all_df = pd.DataFrame()
     for file in files:
-        file_df = pd.read_csv("Results" + os.sep + file, sep=";", index_col=0)
+        file_df = pd.read_csv("Results" + os.sep + "temperatures" + os.sep + file, sep=";", index_col=0)
         file_df.columns = [file[:-4]]
         all_df = pd.concat([all_df, file_df], axis=1)
-        
+    return all_df.transpose()
+
+
+def read_ipcc_counts_rfc():
+    """reads all counts of reasons of concern for all reports and makes on df"""
+    files = os.listdir(os.getcwd()+os.sep+"Results"+ os.sep + "reasons_for_concern")
+    all_df = pd.DataFrame()
+    for file in files:
+        file_df = pd.read_csv("Results" + os.sep + "reasons_for_concern" + os.sep + file, sep=";", index_col=0)
+        file_df.columns = [file[:-4]]
+        all_df = pd.concat([all_df, file_df], axis=1)
     return all_df.transpose()
         
+
+def read_ipcc_counts_ssp():
+    """reads all counts of reasons of concern for all reports and makes on df"""
+    files = os.listdir(os.getcwd()+os.sep+"Results"+ os.sep + "reasons_for_concern")
+    all_df = pd.DataFrame()
+    for file in files:
+        file_df = pd.read_csv("Results" + os.sep + "ssps" + os.sep + file, sep=";", index_col=0)
+        file_df.columns = [file[:-4]]
+        all_df = pd.concat([all_df, file_df], axis=1)
+    return all_df.transpose()
+
+
+def read_ipcc_counts_rcp():
+    """reads all counts of reasons of concern for all reports and makes on df"""
+    files = os.listdir(os.getcwd()+os.sep+"Results"+ os.sep + "reasons_for_concern")
+    all_df = pd.DataFrame()
+    for file in files:
+        file_df = pd.read_csv("Results" + os.sep + "rcps" + os.sep + file, sep=";", index_col=0)
+        file_df.columns = [file[:-4]]
+        all_df = pd.concat([all_df, file_df], axis=1)
+    return all_df.transpose()
 
 def scale_counts(ipcc_counts):
     """scale the counts by overall sum"""
@@ -89,6 +120,7 @@ def lookup_names():
         "ipcc_far_wg_I_full_report":"counts_ReportsipccfarwgIfullreportpdf_parsed",
         }
     return lookup_dict
+
 
 
 def create_temp_keys():

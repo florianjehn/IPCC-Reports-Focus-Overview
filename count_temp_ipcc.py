@@ -57,7 +57,7 @@ def count_temperatures(report):
         temp_dict[temp] += number_of_occurences
     # Save the results for the single pdf
     temp_counts_pdf = pd.DataFrame.from_dict(temp_dict, orient="index")
-    temp_counts_pdf.to_csv("Results" + os.sep + "counts_" + report[:-4] + ".csv", sep=";")
+    temp_counts_pdf.to_csv("Results" + os.sep + "temperatures" + os.sep + "counts_" + report[:-4] + ".csv", sep=";")
     
         
     
