@@ -29,30 +29,14 @@ def get_all_string(report):
         return f.read()
     
 
-# def count_temperatures(report):
-#     temp_dict = create_temp_dict()
-#     text = get_all_string(report)
-#     # print()
-#     # count how often a temperature occures
-#     for temp in temp_dict.keys():
-#         number_of_occurences = len(re.findall(temp, text))   
-#         print("Found " + temp +  " " + str(number_of_occurences) + " time(s)")
-#         if number_of_occurences > 0: 
-#             temp_dict[temp] += number_of_occurences
-#     # Save the results for the single pdf
-#     temp_counts_pdf = pd.DataFrame.from_dict(temp_dict, orient="index")
-#     temp_counts_pdf.to_csv("Results" + os.sep + "counts_" + report[:-4] + ".csv", sep=";")
-
 def count_temperatures(report):
     temp_dict = create_temp_dict()
-    report_df = pd.read_csv(os.getcwd() + os.sep + "Raw IPCC Strings" + os.sep + report)
-    # make sure everything is in one column
-    if len(report_df.columns) != 1:
-        print(report)
-        raise TypeError("Should be a dataframe with only one column")
+    report_df = pd.read_csv(os.getcwd() + os.sep + "Raw IPCC Strings" + os.sep + report, sep="\t", usecols=[0])
+    report_list = report_df[report_df.columns[0]].tolist()
+    report_str = " ".join([str(item) for item in report_list])
     # count how often a temperature occures
     for temp in temp_dict.keys():
-        number_of_occurences = report_df[report_df.columns[0]].str.count(temp).sum() 
+        number_of_occurences = report_str.count(temp)
         print("Found " + temp +  " " + str(number_of_occurences) + " time(s)")
         temp_dict[temp] += number_of_occurences
     # Save the results for the single pdf

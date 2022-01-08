@@ -53,7 +53,7 @@ def plot_all_temp_by_ar(ipcc_counts, meta, cmap):
     fig.tight_layout()
     plt.savefig("Figures"+ os.sep +"AR_all_temps_and_grouped.png", dpi=200)
     plt.close()
-
+    return counts_meta
 
 if __name__ == "__main__":
     # Define basic stuff
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     ipcc_counts = ipcc_counts[ipcc_counts.sum(axis=1)>min_temp_found]
     
     # Plot    
-    plot_all_temp_by_ar(ipcc_counts, meta, cmap)
+    counts_meta= plot_all_temp_by_ar(ipcc_counts, meta, cmap)
 
     
     
