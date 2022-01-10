@@ -4,11 +4,10 @@ Created on Tue Dec  1 11:56:42 2020
 
 @author: Florian Jehn
 """
-import re
 import numpy as np
 import pandas as pd
 import os
-import csv
+
 
 def create_temp_dict():
     """Creates a dictionary for all the single temperatures to count and returns it"""
@@ -30,6 +29,7 @@ def get_all_string(report):
     
 
 def count_temperatures(report):
+    """counts all temperatures between 0.5°C and 10°C in 0.5°C steps"""
     temp_dict = create_temp_dict()
     report_df = pd.read_csv(os.getcwd() + os.sep + "Raw IPCC Strings" + os.sep + report, sep="\t", usecols=[0])
     report_list = report_df[report_df.columns[0]].tolist()
@@ -43,9 +43,9 @@ def count_temperatures(report):
     temp_counts_pdf = pd.DataFrame.from_dict(temp_dict, orient="index")
     temp_counts_pdf.to_csv("Results" + os.sep + "temperatures" + os.sep + "counts_" + report[:-4] + ".csv", sep=";")
     
-        
     
 def count_all_reports():
+    """iterates over all reports"""
     reports = [file for file in os.listdir(os.getcwd() + os.sep + "Raw IPCC Strings") if file[-4:] == ".csv" ]
     for report in reports:
         print("Starting with " + report)  

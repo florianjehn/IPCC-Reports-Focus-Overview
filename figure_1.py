@@ -4,12 +4,31 @@ Created on Sat Dec  5 13:32:12 2020
 
 @author: Florian Jehn
 """
-
-import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import read_prepare_data as rp_da
 
+
+def plot_nicer(ax, with_legend=True):
+    """Takes an axis objects and makes it look nicer"""
+    alpha=0.7
+    for spine in ax.spines.values():
+      spine.set_color("white")
+    # Make text grey
+    plt.setp(ax.get_yticklabels(), alpha=alpha)
+    plt.setp(ax.get_xticklabels(), alpha=alpha)
+    ax.set_xlabel(ax.get_xlabel(), alpha=alpha)
+    ax.set_ylabel(ax.get_ylabel(), alpha=alpha)
+    ax.set_title(ax.get_title(), alpha=alpha)
+    ax.tick_params(axis=u'y', which=u'both',color="#676767")
+    ax.tick_params(axis=u'x', which=u'both',color="white")
+    if with_legend:
+      legend = ax.get_legend()
+      for text in legend.get_texts():
+        text.set_color("#676767")
+      legend.get_title().set_color("#676767")
+    ax.yaxis.get_offset_text().set_color("#676767")
+    
 
 def plot_all_temp_by_ar(ipcc_counts, meta, cmap):
     """Plots all temperatures for all assessment reports  """
@@ -24,7 +43,7 @@ def plot_all_temp_by_ar(ipcc_counts, meta, cmap):
     # Plot the seperate temps
     ax = counts_meta.groupby("AR")[temps].mean().plot(cmap=cmap, kind="bar", width=1, stacked=True)    
     handles, labels = ax.get_legend_handles_labels()
-    ax.legend(handles[::-1], labels[::-1],loc='upper right', bbox_to_anchor=(1.15, 1))
+    ax.legend(handles[::-1], labels[::-1],loc='upper right', bbox_to_anchor=(1.12, 0.962),labelspacing=1.4, frameon=False)
     # Plot the temp groups
     temp_group_means_by_ar = counts_meta.groupby("AR")[temp_groups].mean()
     # prep df for stacking
@@ -41,19 +60,19 @@ def plot_all_temp_by_ar(ipcc_counts, meta, cmap):
                 ax.plot([i-0.5, i-0.5], [AR, last_AR], color="black")    
                 last_AR = AR
             else:
-                last_AR = AR
-                
+                last_AR = AR               
     for temp_group, y_pos in zip(temp_groups, [20,58,85]):
-        ax.text(2, y_pos,temp_group, fontsize=20, fontweight="bold")
-        
+        ax.text(2, y_pos,temp_group, fontsize=16, fontweight="bold")        
     # Make pretty
-    ax.set_ylabel("% Mentions")
+    ax.set_ylabel("Mentions [%]")
+    ax.set_xlabel("Assessment Report (AR)")
+    plot_nicer(ax)
     fig = plt.gcf()
-    fig.set_size_inches(10,10)
+    fig.set_size_inches(8,8)
     fig.tight_layout()
     plt.savefig("Figures"+ os.sep +"AR_all_temps_and_grouped.png", dpi=200)
     plt.close()
-    return counts_meta
+    #return counts_meta
 
 if __name__ == "__main__":
     # Define basic stuff

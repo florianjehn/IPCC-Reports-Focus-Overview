@@ -8,6 +8,7 @@ import os
 import pandas as pd
 import numpy as np
 
+
 def read_ipcc_counts_temp():
     """reads all counts of temperatures for all reports and makes on df"""
     files = os.listdir(os.getcwd()+os.sep+"Results"+ os.sep + "temperatures")
@@ -28,28 +29,7 @@ def read_ipcc_counts_rfc():
         file_df.columns = [file[:-4]]
         all_df = pd.concat([all_df, file_df], axis=1)
     return all_df.transpose()
-        
 
-def read_ipcc_counts_ssp():
-    """reads all counts of reasons of concern for all reports and makes on df"""
-    files = os.listdir(os.getcwd()+os.sep+"Results"+ os.sep + "reasons_for_concern")
-    all_df = pd.DataFrame()
-    for file in files:
-        file_df = pd.read_csv("Results" + os.sep + "ssps" + os.sep + file, sep=";", index_col=0)
-        file_df.columns = [file[:-4]]
-        all_df = pd.concat([all_df, file_df], axis=1)
-    return all_df.transpose()
-
-
-def read_ipcc_counts_rcp():
-    """reads all counts of reasons of concern for all reports and makes on df"""
-    files = os.listdir(os.getcwd()+os.sep+"Results"+ os.sep + "reasons_for_concern")
-    all_df = pd.DataFrame()
-    for file in files:
-        file_df = pd.read_csv("Results" + os.sep + "rcps" + os.sep + file, sep=";", index_col=0)
-        file_df.columns = [file[:-4]]
-        all_df = pd.concat([all_df, file_df], axis=1)
-    return all_df.transpose()
 
 def scale_counts(ipcc_counts):
     """scale the counts by overall sum"""
@@ -67,6 +47,7 @@ def read_meta():
 
 
 def group_temps(ipcc_counts):
+    """groups the temperatures into three categories"""
     ipcc_counts["0.5°C-2°C"] = ipcc_counts[" 0.5°C"] + ipcc_counts[" 1°C"] + ipcc_counts[" 1.5°C"] +ipcc_counts[" 2°C"] 
     ipcc_counts["2.5°C-4°C"] = ipcc_counts[" 2.5°C"] + ipcc_counts[" 3°C"] + ipcc_counts[" 3.5°C"] +ipcc_counts[" 4°C"] 
     ipcc_counts["≥4.5°C"] = ipcc_counts[" 4.5°C"] + ipcc_counts[" 5°C"] + ipcc_counts[" 5.5°C"] +ipcc_counts[" 6°C"] +ipcc_counts[" 6.5°C"] + ipcc_counts[" 7°C"] + ipcc_counts[" 7.5°C"] +ipcc_counts[" 8°C"] + ipcc_counts[" 8.5°C"] + ipcc_counts[" 9°C"] + ipcc_counts[" 9.5°C"] +ipcc_counts[" 10°C"] 
@@ -74,6 +55,7 @@ def group_temps(ipcc_counts):
     
 
 def merge_counts_meta(ipcc_counts, meta):
+    """merges the df with the counted temperatures/rfcs with the metadata"""
     return pd.merge(meta, ipcc_counts, right_index=True, left_on="count_names") 
 
 
@@ -122,8 +104,8 @@ def lookup_names():
     return lookup_dict
 
 
-
 def create_temp_keys():
+    """Creates a list of strings for all temperatures the paper looked at"""
     temps = []
     for i,temp in enumerate(np.arange(0.5,10.1,0.5)):
         if i % 2 != 0:
