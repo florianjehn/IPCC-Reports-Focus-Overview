@@ -47,8 +47,8 @@ def plot_all_temp_by_ar(ipcc_counts, meta, cmap):
     # Plot the temp groups
     temp_group_means_by_ar = counts_meta.groupby("AR")[temp_groups].mean()
     # prep df for stacking
-    temp_group_means_by_ar["2.5°C-4°C"] = temp_group_means_by_ar["2.5°C-4°C"] + temp_group_means_by_ar["0.5°C-2°C"]
-    del(temp_group_means_by_ar["≥4.5°C"])
+    temp_group_means_by_ar["2.5°C - 4°C"] = temp_group_means_by_ar["2.5°C - 4°C"] + temp_group_means_by_ar["0.5°C - 2°C"]
+    del(temp_group_means_by_ar["≥ 4.5°C"])
     # plot  group lines
     for temp_group in temp_groups[:-1]:
         last_AR = 0
@@ -61,8 +61,16 @@ def plot_all_temp_by_ar(ipcc_counts, meta, cmap):
                 last_AR = AR
             else:
                 last_AR = AR               
+    # Add the group labels
+    i = 0
     for temp_group, y_pos in zip(temp_groups, [20,58,85]):
-        ax.text(2, y_pos,temp_group, fontsize=16, fontweight="bold")        
+        #shift top label further to the right
+        if i == 2:
+            ax.text(2, y_pos,temp_group, fontsize=16, fontweight="bold") 
+        else:
+            ax.text(1.8, y_pos,temp_group, fontsize=16, fontweight="bold") 
+        i += 1
+
     # Make pretty
     ax.set_ylabel("Mentions [%]")
     ax.set_xlabel("Assessment Report (AR)")

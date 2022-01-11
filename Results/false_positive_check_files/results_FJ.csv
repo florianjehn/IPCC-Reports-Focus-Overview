@@ -1,0 +1,12 @@
+Temperature,n true positive,n false positive,unclear
+1,5,5,
+1.5,9,1,
+2,6,2,2
+3,6,4,
+4,5,1,4
+5,2,8,
+6,3,5,2
+7,4,5,1
+8,2,7,1
+9,2,7,1
+10,1,9,

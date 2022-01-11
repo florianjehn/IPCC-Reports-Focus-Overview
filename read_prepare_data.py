@@ -31,6 +31,25 @@ def read_ipcc_counts_rfc():
     return all_df.transpose()
 
 
+def read_false_positive():
+    """reads in all the counted false/true positive rates for the temperatres in the
+        IPCC and calculates a true positive rate for each entry"""
+    files = os.listdir(os.getcwd()+os.sep+"Results"+ os.sep + "false_positive_check_files")
+    all_df = pd.DataFrame()
+    for file in files:
+        # only read those files that contains the counting results
+        if "results" not in file:
+            continue
+        file_df = pd.read_csv("Results" + os.sep + "false_positive_check_files" + os.sep + file, sep=",", index_col=0)
+        # calculate the true positive rate
+        file_df["True Positive Rate [%]"] = (file_df["n true positive"]/(file_df["n true positive"]+file_df["n false positive"]))*100
+        # Arange the df for seaborn
+        file_df["Temperature [°C]"] = file_df.index
+        file_df.reset_index(inplace=True, drop=True)
+        all_df = pd.concat([all_df, file_df])
+    return all_df        
+
+
 def scale_counts(ipcc_counts):
     """scale the counts by overall sum"""
     sums = ipcc_counts.sum(axis=1)
@@ -48,9 +67,9 @@ def read_meta():
 
 def group_temps(ipcc_counts):
     """groups the temperatures into three categories"""
-    ipcc_counts["0.5°C-2°C"] = ipcc_counts[" 0.5°C"] + ipcc_counts[" 1°C"] + ipcc_counts[" 1.5°C"] +ipcc_counts[" 2°C"] 
-    ipcc_counts["2.5°C-4°C"] = ipcc_counts[" 2.5°C"] + ipcc_counts[" 3°C"] + ipcc_counts[" 3.5°C"] +ipcc_counts[" 4°C"] 
-    ipcc_counts["≥4.5°C"] = ipcc_counts[" 4.5°C"] + ipcc_counts[" 5°C"] + ipcc_counts[" 5.5°C"] +ipcc_counts[" 6°C"] +ipcc_counts[" 6.5°C"] + ipcc_counts[" 7°C"] + ipcc_counts[" 7.5°C"] +ipcc_counts[" 8°C"] + ipcc_counts[" 8.5°C"] + ipcc_counts[" 9°C"] + ipcc_counts[" 9.5°C"] +ipcc_counts[" 10°C"] 
+    ipcc_counts["0.5°C - 2°C"] = ipcc_counts[" 0.5°C"] + ipcc_counts[" 1°C"] + ipcc_counts[" 1.5°C"] +ipcc_counts[" 2°C"] 
+    ipcc_counts["2.5°C - 4°C"] = ipcc_counts[" 2.5°C"] + ipcc_counts[" 3°C"] + ipcc_counts[" 3.5°C"] +ipcc_counts[" 4°C"] 
+    ipcc_counts["≥ 4.5°C"] = ipcc_counts[" 4.5°C"] + ipcc_counts[" 5°C"] + ipcc_counts[" 5.5°C"] +ipcc_counts[" 6°C"] +ipcc_counts[" 6.5°C"] + ipcc_counts[" 7°C"] + ipcc_counts[" 7.5°C"] +ipcc_counts[" 8°C"] + ipcc_counts[" 8.5°C"] + ipcc_counts[" 9°C"] + ipcc_counts[" 9.5°C"] +ipcc_counts[" 10°C"] 
     return ipcc_counts.iloc[:,20:]
     
 
