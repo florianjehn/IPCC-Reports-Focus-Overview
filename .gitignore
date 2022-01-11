@@ -2,3 +2,7 @@
 *.zip
 Raw IPCC Strings/all_reports.csv
 Reports/desktop.ini
+*.pyc
+*.pyc
+Raw IPCC Strings/all_ipcc_strings.csv
+*.ods

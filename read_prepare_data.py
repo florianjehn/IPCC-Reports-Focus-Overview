@@ -117,14 +117,20 @@ def create_temp_keys():
 
 def combine_all_raw_strings():
     """combines all raw strings into one big file to search through"""
-    df = pd.DataFrame()
     reports = [file for file in os.listdir(os.getcwd() + os.sep + "Raw IPCC Strings") if file[-4:] == ".csv" ]
-    for report in reports:
+    all_reports = " "
+    for report in reports:       
         print("Starting with " + report) 
-        report_df = pd.read_csv(os.getcwd() + os.sep + "Raw IPCC Strings" + os.sep + report)
-        df = pd.concat([df, report_df])
-    df.to_csv("Raw IPCC Strings" + os.sep + "all_reports.csv")    
+        report_df = pd.read_csv(os.getcwd() + os.sep + "Raw IPCC Strings" + os.sep + report, sep="\t", usecols=[0])
+        report_list = report_df[report_df.columns[0]].tolist()
+        report_str = " ".join([str(item) for item in report_list])
+        all_reports += report_str
     
+    with open(os.getcwd() + os.sep + "Raw IPCC Strings" + os.sep + "all_ipcc_strings.csv", 'w', encoding='utf-8') as f:
+        # this file is not included in the repository, as it is too large for Github
+        f.write(all_reports)
+    
+
 
 if __name__ == "__main__":
     combine_all_raw_strings()
