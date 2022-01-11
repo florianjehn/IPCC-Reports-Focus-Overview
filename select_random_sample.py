@@ -20,13 +20,13 @@ def read_ipcc_string():
 def find_all_temp_occurence(ipcc_string):
     """finds all occurences for all temperatures"""
     temp_dict = {}
-    for i in np.arange(1,10.5, 1):
+    for i in [1,1.5,2,3,4,5,6,7,8,9,10]:
         # Test if it is a float or not to format it right
         if i == int(i):
             # Add an empty space at the beginnign to make sure this is not counting e.g. 1.5°C  as 5°C
             key = " " + str(int(i)) + "°C"
         else: 
-            key = " " + str(i )+ "°C"
+            key = " " + str(i)+ "°C"
         temp_dict[key] = [m.start() for m in re.finditer(key, ipcc_string)]
     return temp_dict
     
@@ -43,10 +43,6 @@ def get_strings_around_temps(temp_dict, ipcc_string, n_temp_sample=10, sample_le
                     f.write(ipcc_string[int(index-(sample_length/2)):int(index+(sample_length/2))]+"\n\n")
             
     
-
-
-
-
 if __name__ == "__main__":
     ipcc_string = read_ipcc_string()
     temp_dict = find_all_temp_occurence(ipcc_string)
