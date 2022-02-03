@@ -3,7 +3,7 @@
 Raw IPCC Strings/all_reports.csv
 Reports/desktop.ini
 *.pyc
-*.pyc
+*.pyo
 Raw IPCC Strings/all_ipcc_strings.csv
 *.ods
 Results/false_positive_check_files/results.csv
