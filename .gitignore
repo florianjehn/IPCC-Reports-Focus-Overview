@@ -7,3 +7,4 @@ Reports/desktop.ini
 Raw IPCC Strings/all_ipcc_strings.csv
 *.ods
 Results/false_positive_check_files/results.csv
+__pycache__/
