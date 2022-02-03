@@ -23,6 +23,7 @@ def plot_nicer(ax):
     ax.set_xlabel(ax.get_xlabel(), alpha=alpha)
     ax.set_ylabel(ax.get_ylabel(), alpha=alpha)
     ax.set_title(ax.get_title(), alpha=alpha)
+    ax.grid("lightgrey")
     ax.tick_params(axis=u'y', which=u'both',color="#676767")
     ax.tick_params(axis=u'x', which=u'both',color="#676767")
     

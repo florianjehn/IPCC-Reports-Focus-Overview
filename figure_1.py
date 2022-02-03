@@ -39,6 +39,13 @@ def plot_all_temp_by_ar(ipcc_counts, meta, cmap):
     # prep for plotting
     counts_meta = rp_da.merge_counts_meta(ipcc_counts, meta)
     counts_meta = rp_da.merge_counts_meta(ipcc_counts_grouped, counts_meta)
+    # Add the years of the reports
+    
+    ar = ["AR" + str(i) for i in range(1,7)]
+    ar_year = {}
+    for ar, year in zip(ar, ["(1990)", "(1995)", "(2001)", "(2007)", "(2013)", "(2021)"]):
+        ar_year[ar] = ar + " " + year
+    counts_meta["AR"].replace(ar_year, inplace=True)
     temps = rp_da.create_temp_keys()
     # Plot the seperate temps
     ax = counts_meta.groupby("AR")[temps].mean().plot(cmap=cmap, kind="bar", width=1, stacked=True)    
@@ -72,6 +79,7 @@ def plot_all_temp_by_ar(ipcc_counts, meta, cmap):
         i += 1
 
     # Make pretty
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=0, ha='center')
     ax.set_ylabel("Mentions [%]")
     ax.set_xlabel("Assessment Report (AR)")
     plot_nicer(ax)
@@ -80,7 +88,7 @@ def plot_all_temp_by_ar(ipcc_counts, meta, cmap):
     fig.tight_layout()
     plt.savefig("Figures"+ os.sep +"AR_all_temps_and_grouped.png", dpi=200)
     plt.close()
-    #return counts_meta
+    return counts_meta
 
 if __name__ == "__main__":
     # Define basic stuff
