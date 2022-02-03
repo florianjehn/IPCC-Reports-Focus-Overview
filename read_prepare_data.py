@@ -7,6 +7,8 @@ Created on Fri Sep 17 10:12:26 2021
 import os
 import pandas as pd
 import numpy as np
+import re
+import random
 
 
 def read_ipcc_counts_temp():
@@ -148,8 +150,127 @@ def combine_all_raw_strings():
     with open(os.getcwd() + os.sep + "Raw IPCC Strings" + os.sep + "all_ipcc_strings.csv", 'w', encoding='utf-8') as f:
         # this file is not included in the repository, as it is too large for Github
         f.write(all_reports)
+
+
+def create_temp_dict():
+    """Creates a dictionary for all the single temperatures to count and returns it"""
+    temp_dict = {}
+    for i in np.arange(0.5,10.5, 0.5):
+        # Test if it is a float or not to format it right
+        if i == int(i):
+            # Add an empty space at the beginnign to make sure this is not counting e.g. 1.5°C  as 5°C
+            key = " " + str(int(i)) + "°C"
+        else: 
+            key = " " + str(i )+ "°C"
+        temp_dict[key] = 0
+    return temp_dict
     
 
+def get_all_string(report):
+    with open(os.getcwd() + os.sep + "Raw IPCC Strings" + os.sep + report, 'r', encoding='utf-8') as f:
+        return f.read()
+    
+
+def count_temperatures(report):
+    """counts all temperatures between 0.5°C and 10°C in 0.5°C steps"""
+    temp_dict = create_temp_dict()
+    report_df = pd.read_csv(os.getcwd() + os.sep + "Raw IPCC Strings" + os.sep + report, sep="\t", usecols=[0])
+    report_list = report_df[report_df.columns[0]].tolist()
+    report_str = " ".join([str(item) for item in report_list])
+    # count how often a temperature occures
+    for temp in temp_dict.keys():
+        number_of_occurences = report_str.count(temp)
+        print("Found " + temp +  " " + str(number_of_occurences) + " time(s)")
+        temp_dict[temp] += number_of_occurences
+    # Save the results for the single pdf
+    temp_counts_pdf = pd.DataFrame.from_dict(temp_dict, orient="index")
+    temp_counts_pdf.to_csv("Results" + os.sep + "temperatures" + os.sep + "counts_" + report[:-4] + ".csv", sep=";")
+    
+    
+def count_temp_in_all_reports():
+    """iterates over all reports"""
+    reports = [file for file in os.listdir(os.getcwd() + os.sep + "Raw IPCC Strings") if file[-4:] == ".csv" ]
+    for report in reports:
+        print("Starting with " + report)  
+        count_temperatures(report)    
+
+
+def create_rfc_dict():
+    """Creates a dictionary for all "reasons for concern" to count and returns it"""
+    rfc_dict = {
+        "unique and threatened systems":0,
+        "extreme climate events":0,
+        "distribution of impacts":0,
+        "aggregate impacts":0,
+        "large-scale singular event":0
+        }
+    return rfc_dict
+    
+
+def count_rfc(report):
+    """counts all reasons of concerns mentioned in a given report"""
+    rfc_dict = create_rfc_dict()
+    report_df = pd.read_csv(os.getcwd() + os.sep + "Raw IPCC Strings" + os.sep + report, sep="\t", usecols=[0])
+    report_list = report_df[report_df.columns[0]].tolist()
+    report_str = " ".join([str(item) for item in report_list])
+    # count how often a temperature occures
+    for reason_for_concern in rfc_dict.keys():
+        number_of_occurences = report_str.count(reason_for_concern)
+        print("Found " + reason_for_concern +  " " + str(number_of_occurences) + " time(s)")
+        rfc_dict[reason_for_concern] += number_of_occurences
+    # Save the results for the single pdf
+    rfc_counts_pdf = pd.DataFrame.from_dict(rfc_dict, orient="index")
+    rfc_counts_pdf.to_csv("Results" + os.sep + "reasons_for_concern" + os.sep + "counts_" + report[:-4] + ".csv", sep=";")
+     
+    
+def count_rfc_in_all_reports():
+    """iterates over all reports"""
+    reports = [file for file in os.listdir(os.getcwd() + os.sep + "Raw IPCC Strings") if file[-4:] == ".csv" ]
+    for report in reports:
+        print("Starting with " + report)  
+        count_rfc(report)
+        
+
+def read_ipcc_string():
+    """reads in the string that contains all reports"""
+    with open(os.getcwd() + os.sep + "Raw IPCC Strings" + os.sep + "all_ipcc_strings.csv", 'r', encoding='utf-8') as f:
+        return str(f.readlines())
+    
+    
+def find_all_temp_occurence(ipcc_string):
+    """finds all occurences for all temperatures"""
+    temp_dict = {}
+    for i in [1,1.5,2,3,4,5,6,7,8,9,10]:
+        # Test if it is a float or not to format it right
+        if i == int(i):
+            # Add an empty space at the beginnign to make sure this is not counting e.g. 1.5°C  as 5°C
+            key = " " + str(int(i)) + "°C"
+        else: 
+            key = " " + str(i)+ "°C"
+        temp_dict[key] = [m.start() for m in re.finditer(key, ipcc_string)]
+    return temp_dict
+    
+
+def get_strings_around_temps(temp_dict, ipcc_string, n_temp_sample=10, sample_length=250):
+    """extracts the text around a given index in the string of all ipcc reports"""
+    # number of files created with independent samples
+    amount_files = 6
+    for file in range(amount_files):
+        with open(os.getcwd() + os.sep + "Results" + os.sep + "false_positive_check_files" + os.sep + "false_positive_"+str(file+1)+".csv", 'w', encoding='utf-8') as f:       
+            for temp in temp_dict.keys():
+                random_temp_sample = random.sample(temp_dict[temp],n_temp_sample)
+                for index in random_temp_sample:
+                    f.write(ipcc_string[int(index-(sample_length/2)):int(index+(sample_length/2))]+"\n\n")
+            
 
 if __name__ == "__main__":
+    # Run the data analysis
     combine_all_raw_strings()
+    count_rfc_in_all_reports()
+    count_temp_in_all_reports()
+
+    # Get the random sample
+    ipcc_string = read_ipcc_string()
+    temp_dict = find_all_temp_occurence(ipcc_string)
+    random.seed(1)
+    get_strings_around_temps(temp_dict, ipcc_string)

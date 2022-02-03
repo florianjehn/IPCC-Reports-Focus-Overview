@@ -8,7 +8,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import read_prepare_data as rp_da
-import count_rfc_ipcc
 import seaborn as sns
 
 
@@ -34,7 +33,7 @@ def plot_all_temp_by_wg(ipcc_counts_temp, meta, cmap):
     ax = wgs_continous_temp.plot(cmap=cmap, kind="bar", width=0.9, stacked=True)
     # Handle the legend
     handles, labels = ax.get_legend_handles_labels()
-    ax.legend(handles[::-1], labels[::-1],loc='upper right', bbox_to_anchor=(1.15, 1))
+    ax.legend(handles[::-1], labels[::-1],loc='upper right', bbox_to_anchor=(1.12, 0.962),labelspacing=1.4, frameon=False)
     # Plot the temp groups
     wgs_group_temp = pd.concat([wgI[temp_groups].mean(), wgII[temp_groups].mean(), wgIII[temp_groups].mean()],axis=1)
     wgs_group_temp.columns = ["WG I", "WG II", "WG III"]
@@ -49,13 +48,14 @@ def plot_all_temp_by_wg(ipcc_counts_temp, meta, cmap):
             ax.plot([i-0.45,i+1-0.55], [WG,WG], color="black")
 
 
-    for temp_group, y_pos in zip(temp_groups, [20,60,80]):
-        ax.text(0.7, y_pos,temp_group, fontsize=20, fontweight="bold")
+    for temp_group, y_pos in zip(temp_groups, [20,60,90]):
+        ax.text(0.7, y_pos,temp_group, fontsize=14, fontweight="bold")
         
     # Make pretty
     ax.set_ylabel("% Mentions")
+    plot_nicer(ax)
     fig = plt.gcf()
-    fig.set_size_inches(10,10)
+    fig.set_size_inches(8,8)
     fig.tight_layout()
     plt.savefig("Figures"+ os.sep + "Supplementary" + os.sep + "WG_all_temps_and_grouped.png", dpi=200)
     plt.close()
@@ -74,7 +74,7 @@ def plot_all_temp_by_report_type(ipcc_counts_temp, meta, cmap):
     # Plot the seperate temps
     ax = counts_meta.groupby("Kind of Report")[temps].mean().plot(cmap=cmap, kind="bar", width=0.9, stacked=True)    
     handles, labels = ax.get_legend_handles_labels()
-    ax.legend(handles[::-1], labels[::-1],loc='upper right', bbox_to_anchor=(1.15, 1))
+    ax.legend(handles[::-1], labels[::-1],loc='upper right', bbox_to_anchor=(1.12, 0.962),labelspacing=1.4, frameon=False)
     # Plot the temp groups
     temp_group_means_by_report = counts_meta.groupby("Kind of Report")[temp_groups].mean()
     # prep df for stacking
@@ -88,13 +88,14 @@ def plot_all_temp_by_report_type(ipcc_counts_temp, meta, cmap):
             # Plot vertical lines
 
 
-    for temp_group, y_pos in zip(temp_groups, [20,60,80]):
-        ax.text(1.6, y_pos,temp_group, fontsize=20, fontweight="bold")
+    for temp_group, y_pos in zip(temp_groups, [20,60,90]):
+        ax.text(1.6, y_pos,temp_group, fontsize=14, fontweight="bold")
         
     # Make pretty
     ax.set_ylabel("% Mentions")
+    plot_nicer(ax)
     fig = plt.gcf()
-    fig.set_size_inches(10,10)
+    fig.set_size_inches(8,8)
     fig.tight_layout()
     plt.savefig("Figures"+ os.sep + "Supplementary" + os.sep + "report_type_all_temps_and_grouped.png", dpi=200)
     plt.close()
@@ -105,20 +106,22 @@ def plot_all_rfc_by_ar(ipcc_counts_rfc, meta, cmap):
     ipcc_counts_rfc = rp_da.scale_counts(ipcc_counts_rfc.copy())
     # prep for plotting
     counts_meta = rp_da.merge_counts_meta(ipcc_counts_rfc, meta)
-    rfcs = list(count_rfc_ipcc.create_rfc_dict().keys())
+    rfcs = list(rp_da.create_rfc_dict().keys())
     # Plot the seperate temps
     ax = counts_meta.groupby("AR")[rfcs].mean().plot(kind="bar", stacked=True, cmap=cmap)    
-
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(handles[::-1], labels[::-1], loc=7)
     # Make pretty
     ax.set_ylabel("% Mentions")
+    plot_nicer(ax)
     fig = plt.gcf()
-    fig.set_size_inches(10,10)
+    fig.set_size_inches(8,8)
     fig.tight_layout()
     plt.savefig("Figures"+ os.sep + "Supplementary" + os.sep + "AR_all_rfc_and_grouped.png", dpi=200)
     plt.close()
     
 
-def plot_nicer(ax):
+def plot_nicer(ax, grid=False):
     """Takes an axis objects and makes it look nicer"""
     alpha=0.7
     for spine in ax.spines.values():
@@ -129,7 +132,8 @@ def plot_nicer(ax):
     ax.set_xlabel(ax.get_xlabel(), alpha=alpha)
     ax.set_ylabel(ax.get_ylabel(), alpha=alpha)
     ax.set_title(ax.get_title(), alpha=alpha)
-    ax.grid("lightgrey")
+    if grid:
+        ax.grid("lightgrey")
     ax.tick_params(axis=u'y', which=u'both',color="#676767")
     ax.tick_params(axis=u'x', which=u'both',color="#676767")
     
@@ -142,7 +146,7 @@ def plot_tp_rate(tp_rate):
     ax.plot(means["Temperature [°C]"].astype('str'), means["True Positive Rate [%]"], color="darkgrey")
     ax.set_ylim(0,100)
     # Make figure nicer
-    plot_nicer(ax)
+    plot_nicer(ax, grid=True)
     fig = plt.gcf()
     fig.set_size_inches(8,2.2)
     fig.tight_layout()
