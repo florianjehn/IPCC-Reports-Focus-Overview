@@ -84,6 +84,7 @@ def lookup_names():
     """"Returns lookup dict for different files names to merge them"""
     lookup_dict = {
         "IPCC_AR6_WGI_Full_Report":"counts_IPCC_AR6_WGI_Full_Report_parsed",
+        "IPCC_AR6_WGII_Full_Report":"counts_IPCC_AR6_WGII_FinalDraft_FullReport_parsed",
         "SROCC_FullReport_FINAL":"counts_SROCC_FullReport_FINAL_parsed",
         "210714-IPCCJ7230-SRCCL-Complete-BOOK-HRES":"counts_210714-IPCCJ7230-SRCCL-Complete-BOOK-HRES_parsed",
         "SR15_Full_Report_Low_Res":"counts_SR15_Full_Report_Low_Res_parsed",
