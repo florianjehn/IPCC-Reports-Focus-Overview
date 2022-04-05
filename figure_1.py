@@ -86,7 +86,7 @@ def plot_all_temp_by_ar(ipcc_counts, meta, cmap):
     fig = plt.gcf()
     fig.set_size_inches(8,8)
     fig.tight_layout()
-    plt.savefig("Figures"+ os.sep +"AR_all_temps_and_grouped.png", dpi=200)
+    plt.savefig("Figures"+ os.sep +"AR_all_temps_and_grouped.png", dpi=300)
     plt.close()
     return counts_meta
 
