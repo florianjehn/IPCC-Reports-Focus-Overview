@@ -22,6 +22,17 @@ def read_ipcc_counts_temp():
     return all_df.transpose()
 
 
+def read_ipcc_counts_dates():
+    """reads all counts of dates for all reports and makes on df"""
+    files = os.listdir(os.getcwd()+os.sep+"Results"+ os.sep + "dates")
+    all_df = pd.DataFrame()
+    for file in files:
+        file_df = pd.read_csv("Results" + os.sep + "dates" + os.sep + file, sep=";", index_col=0)
+        file_df.columns = [file[:-4]]
+        all_df = pd.concat([all_df, file_df], axis=1)
+    return all_df.transpose()
+
+
 def read_ipcc_counts_rfc():
     """reads all counts of reasons of concern for all reports and makes on df"""
     files = os.listdir(os.getcwd()+os.sep+"Results"+ os.sep + "reasons_for_concern")
@@ -263,13 +274,38 @@ def get_strings_around_temps(temp_dict, ipcc_string, n_temp_sample=10, sample_le
                 random_temp_sample = random.sample(temp_dict[temp],n_temp_sample)
                 for index in random_temp_sample:
                     f.write(ipcc_string[int(index-(sample_length/2)):int(index+(sample_length/2))]+"\n\n")
-            
+                        
+
+def count_dates(report):
+    """counts all dates between 2000 and 2100 in 10 year steps"""
+    dates = {str(year):0 for year in range(2000,2105,10)}
+    report_df = pd.read_csv(os.getcwd() + os.sep + "Raw IPCC Strings" + os.sep + report, sep="\t", usecols=[0])
+    report_list = report_df[report_df.columns[0]].tolist()
+    report_str = " ".join([str(item) for item in report_list])
+    # count how often a temperature occures
+    for date in dates.keys():
+        number_of_occurences = report_str.count(date)
+        print("Found " + date +  " " + str(number_of_occurences) + " time(s)")
+        dates[date] += number_of_occurences
+    # Save the results for the single pdf
+    temp_counts_pdf = pd.DataFrame.from_dict(dates, orient="index")
+    temp_counts_pdf.to_csv("Results" + os.sep + "dates" + os.sep + "counts_" + report[:-4] + ".csv", sep=";")
+  
+    
+def count_dates_in_all_reports():
+    """iterates over all reports"""
+    reports = [file for file in os.listdir(os.getcwd() + os.sep + "Raw IPCC Strings") if file[-4:] == ".csv" ]
+    for report in reports:
+        print("Starting with " + report)  
+        count_dates(report)   
+
 
 if __name__ == "__main__":
     # Run the data analysis
     combine_all_raw_strings()
     count_rfc_in_all_reports()
     count_temp_in_all_reports()
+    count_dates_in_all_reports()
 
     # Get the random sample
     ipcc_string = read_ipcc_string()

@@ -154,6 +154,27 @@ def plot_tp_rate(tp_rate):
     plt.close()    
     
     
+def plot_all_dates_by_ar(ipcc_counts_dates, meta, cmap):
+    """Plots all dates for all assessment reports  """
+    ipcc_counts_dates = rp_da.scale_counts(ipcc_counts_dates.copy())
+    # prep for plotting
+    counts_meta = rp_da.merge_counts_meta(ipcc_counts_dates, meta)
+    dates = list({str(year):0 for year in range(2000,2105,10)}.keys())
+    # Plot the seperate temps
+    means = counts_meta.groupby("AR").mean().iloc[:,3:]
+    ax = means.plot(kind="bar", stacked=True, cmap=cmap)    
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(handles[::-1], labels[::-1],loc='upper right', bbox_to_anchor=(1.12, 0.962),labelspacing=1.4, frameon=False)
+    # Make pretty
+    ax.set_ylabel("% Mentions")
+    plot_nicer(ax)
+    fig = plt.gcf()
+    fig.set_size_inches(8,8)
+    fig.tight_layout()
+    plt.savefig("Figures"+ os.sep + "Supplementary" + os.sep + "AR_all_dates_grouped.png", dpi=200)
+    plt.close()
+    
+    
 if __name__ == "__main__":
     # Define basic stuff
     # exclude reports with only few temperature mentions, as they distort the picture
@@ -163,6 +184,7 @@ if __name__ == "__main__":
     # get the data    
     ipcc_counts_temp = rp_da.read_ipcc_counts_temp()
     ipcc_counts_rfc = rp_da.read_ipcc_counts_rfc()
+    ipcc_counts_dates = rp_da.read_ipcc_counts_dates()
     tp_rate = rp_da.read_false_positive()
 
     meta = rp_da.read_meta()
@@ -172,9 +194,11 @@ if __name__ == "__main__":
     # Remove the ones with few entries overall
     ipcc_counts_temp = ipcc_counts_temp[ipcc_counts_temp.sum(axis=1)>min_temp_found]
     ipcc_counts_rfc = ipcc_counts_rfc[ipcc_counts_rfc.sum(axis=1)>min_temp_found]
+    ipcc_counts_dates = ipcc_counts_dates[ipcc_counts_dates.sum(axis=1)>min_temp_found]
     
     # Plot    
     plot_all_temp_by_wg(ipcc_counts_temp, meta, cmap)
     plot_all_temp_by_report_type(ipcc_counts_temp, meta, cmap)
     plot_all_rfc_by_ar(ipcc_counts_rfc, meta, cmap)
+    plot_all_dates_by_ar(ipcc_counts_dates, meta, cmap)
     plot_tp_rate(tp_rate)
