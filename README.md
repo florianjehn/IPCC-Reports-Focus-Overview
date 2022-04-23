@@ -13,3 +13,4 @@ Running `supplementary_figures.py` will create the supplementary figures that sh
 - the distributions of the reasons for concern 
 - the distribution of the temperatures based on the working groups and the report type
 - the true positive rate for the different temperatures
+- the distribution of years considered in the different assessment reports
